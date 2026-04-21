@@ -134,6 +134,71 @@ const SnapshotsControls = () => {
 		</ClayForm.Group>
 	);
 
+	const setDefaultSnapshot = ({
+		isDefault,
+		snapshotERC,
+	}: {
+		isDefault: boolean;
+		snapshotERC: string;
+	}) => {
+		const currentDefaultSnapshot = snapshots.find(
+			(snapshot: ISnapshot) => snapshot.default && snapshot.erc !== snapshotERC
+		);
+
+		const patchSnapshot = (erc: string, value: boolean) =>
+			fetch(
+				`/o/data-set-admin/snapshots/by-external-reference-code/${erc}`,
+				{
+					body: JSON.stringify({default: value}),
+					headers: DEFAULT_FETCH_HEADERS,
+					method: 'PATCH',
+				}
+			);
+
+		const requests = [patchSnapshot(snapshotERC, isDefault)];
+
+		if (isDefault && currentDefaultSnapshot) {
+			requests.push(patchSnapshot(currentDefaultSnapshot.erc, false));
+		}
+
+		Promise.all(requests)
+			.then((responses) => {
+				if (responses.every((response) => response.ok)) {
+					viewsDispatch({
+						type: EViewsActionTypes.SET_DEFAULT_SNAPSHOT,
+						value: {erc: snapshotERC, isDefault},
+					});
+
+					openToast({
+						message: isDefault
+							? Liferay.Language.get(
+									'view-was-set-as-default-successfully'
+								)
+							: Liferay.Language.get(
+									'default-view-was-removed-successfully'
+								),
+						type: 'success',
+					});
+				}
+				else {
+					openToast({
+						message: Liferay.Language.get(
+							'an-unexpected-error-occurred'
+						),
+						type: 'danger',
+					});
+				}
+			})
+			.catch(() => {
+				openToast({
+					message: Liferay.Language.get(
+						'an-unexpected-error-occurred'
+					),
+					type: 'danger',
+				});
+			});
+	};
+
 	const saveSnapshot = ({
 		label,
 		processClose,
@@ -416,7 +481,17 @@ const SnapshotsControls = () => {
 							: Liferay.Language.get('default-view')
 					}
 				>
-					{(view) => <Option key={view.erc}>{view.label}</Option>}
+					{(view) => (
+						<Option key={view.erc}>
+							{view.label}
+
+							{(view as ISnapshot).default && (
+								<span className="inline-item-after reference-mark default-view-mark">
+									<ClayIcon symbol="star" />
+								</span>
+							)}
+						</Option>
+					)}
 				</Picker>
 			</ManagementToolbar.Item>
 
@@ -468,6 +543,33 @@ const SnapshotsControls = () => {
 									symbolLeft="pencil"
 								>
 									{Liferay.Language.get('rename-view')}
+								</ClayDropDown.Item>
+
+								<ClayDropDown.Item
+									onClick={() => {
+										const isDefault =
+											!activeSnapshot.default;
+
+										setDefaultSnapshot({
+											isDefault,
+											snapshotERC: activeSnapshotERC,
+										});
+
+										setActionsDropdownActive(false);
+									}}
+									symbolLeft={
+										activeSnapshot.default
+											? 'star'
+											: 'star-o'
+									}
+								>
+									{activeSnapshot.default
+										? Liferay.Language.get(
+												'remove-default-view'
+											)
+										: Liferay.Language.get(
+												'set-as-default-view'
+											)}
 								</ClayDropDown.Item>
 
 								<ClayDropDown.Item

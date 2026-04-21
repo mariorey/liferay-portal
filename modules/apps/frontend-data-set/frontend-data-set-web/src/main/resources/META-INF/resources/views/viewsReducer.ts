@@ -16,6 +16,7 @@ export enum EViewsActionTypes {
 	NOOP = 'NOOP',
 	RENAME_ACTIVE_SNAPSHOT = 'RENAME_ACTIVE_SNAPSHOT',
 	RESET_TO_DEFAULT_SNAPSHOT = 'RESET_TO_DEFAULT_SNAPSHOT',
+	SET_DEFAULT_SNAPSHOT = 'SET_DEFAULT_SNAPSHOT',
 	UPDATE_ACTIVE_SNAPSHOT = 'UPDATE_ACTIVE_SNAPSHOT',
 	UPDATE_ACTIVE_VIEW = 'UPDATE_ACTIVE_VIEW',
 	UPDATE_FIELD = 'UPDATE_FIELD',
@@ -120,6 +121,22 @@ const viewsActions: TViewsActions = {
 			...defaultSnapshot,
 			activeSnapshotERC: null,
 			snapshotUpdated: false,
+		};
+	},
+	[EViewsActionTypes.SET_DEFAULT_SNAPSHOT]: (state, {erc, isDefault}) => {
+		const updatedSnapshots = state.snapshots.map((snapshot: ISnapshot) => ({
+			...snapshot,
+			default:
+				snapshot.erc === erc
+					? isDefault
+					: isDefault
+						? false
+						: snapshot.default,
+		}));
+
+		return {
+			...state,
+			snapshots: updatedSnapshots,
 		};
 	},
 	[EViewsActionTypes.UPDATE_ACTIVE_SNAPSHOT]: (state, value) => {

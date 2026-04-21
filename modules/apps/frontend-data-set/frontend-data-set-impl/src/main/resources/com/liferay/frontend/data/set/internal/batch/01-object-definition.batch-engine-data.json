@@ -1603,6 +1603,23 @@
 					"type": "Boolean"
 				},
 				{
+					"DBType": "Boolean",
+					"businessType": "Boolean",
+					"defaultValue": false,
+					"externalReferenceCode": "DEFAULT",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Default"
+					},
+					"localized": false,
+					"name": "default",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "Boolean"
+				},
+				{
 					"DBType": "Clob",
 					"businessType": "LongText",
 					"externalReferenceCode": "FDS_NAME",

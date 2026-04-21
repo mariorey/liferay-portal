@@ -715,7 +715,9 @@ const FrontendDataSetContent = ({
 		});
 	}, [globalFDSState, setGlobalFDSState]);
 
+	const defaultSnapshotAppliedRef = useRef(false);
 	const skipSnapshotsUpdatedChangeRef = useRef(true);
+	const skipSnapshotUpdatedAfterDefaultApplyRef = useRef(false);
 
 	useEffect(() => {
 		if (
@@ -732,6 +734,46 @@ const FrontendDataSetContent = ({
 		filterClientExtensionsLoaded,
 		globalFDSStateInitialized,
 	]);
+
+	useEffect(() => {
+		if (!globalFDSStateInitialized || defaultSnapshotAppliedRef.current) {
+			return;
+		}
+
+		defaultSnapshotAppliedRef.current = true;
+
+		if (readConfigFromURL(id)) {
+			return;
+		}
+
+		const defaultUserSnapshot = viewsState.snapshots?.find(
+			(snapshot: ISnapshot) => snapshot.default
+		);
+
+		if (!defaultUserSnapshot) {
+			return;
+		}
+
+		// Apply the default snapshot directly without writing to the URL.
+		// Writing to the URL (via handleSnapshotChange) would cause reloads
+		// to skip re-applying the default snapshot (URL config takes priority)
+		// and can cause snapshotUpdated to briefly appear true.
+
+		const snapshot = deepClone(defaultUserSnapshot);
+
+		skipSnapshotUpdatedAfterDefaultApplyRef.current = true;
+		skipSnapshotsUpdatedChangeRef.current = true;
+
+		viewsDispatch({
+			type: EViewsActionTypes.UPDATE_ACTIVE_SNAPSHOT,
+			value: snapshot,
+		});
+
+		setGlobalFDSState({
+			...deepClone(globalFDSState),
+			filters: snapshot.configuration.filters,
+		});
+	}, [globalFDSStateInitialized]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	useEffect(() => {
 		if (!globalFDSStateInitialized) {
@@ -780,6 +822,9 @@ const FrontendDataSetContent = ({
 
 		if (skipSnapshotsUpdatedChangeRef.current) {
 			skipSnapshotsUpdatedChangeRef.current = false;
+		}
+		else if (skipSnapshotUpdatedAfterDefaultApplyRef.current) {
+			skipSnapshotUpdatedAfterDefaultApplyRef.current = false;
 		}
 		else {
 			viewsDispatch({

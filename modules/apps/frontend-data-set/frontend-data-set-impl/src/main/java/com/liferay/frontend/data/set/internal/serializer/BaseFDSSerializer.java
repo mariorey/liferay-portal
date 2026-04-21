@@ -88,6 +88,8 @@ public abstract class BaseFDSSerializer {
 					return JSONUtil.put(
 						"configuration", properties.get("viewConfig")
 					).put(
+						"default", properties.get("default")
+					).put(
 						"erc", objectEntry.getExternalReferenceCode()
 					).put(
 						"label", String.valueOf(properties.get("label"))
