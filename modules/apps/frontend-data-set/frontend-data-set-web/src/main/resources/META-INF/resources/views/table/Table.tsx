@@ -450,7 +450,12 @@ function ClayTableRowOptionalDropTarget({
 		className: classNames(className, dropClassName),
 		items,
 		onClick: selectable
-			? () => {
+            ? (event: React.MouseEvent) => {
+                const target = event.target as HTMLElement;
+
+                if (target.closest('a, button, input, select, textarea')) {
+                    return;
+                }
 					onItemSelectionChange(item, true);
 				}
 			: undefined,
