@@ -16,6 +16,7 @@ export enum EViewsActionTypes {
 	NOOP = 'NOOP',
 	RENAME_ACTIVE_SNAPSHOT = 'RENAME_ACTIVE_SNAPSHOT',
 	RESET_TO_DEFAULT_SNAPSHOT = 'RESET_TO_DEFAULT_SNAPSHOT',
+	SET_ACTIVE_SNAPSHOT_ERC = 'SET_ACTIVE_SNAPSHOT_ERC',
 	SET_DEFAULT_SNAPSHOT = 'SET_DEFAULT_SNAPSHOT',
 	UPDATE_ACTIVE_SNAPSHOT = 'UPDATE_ACTIVE_SNAPSHOT',
 	UPDATE_ACTIVE_VIEW = 'UPDATE_ACTIVE_VIEW',
@@ -120,6 +121,13 @@ const viewsActions: TViewsActions = {
 			...state,
 			...defaultSnapshot,
 			activeSnapshotERC: null,
+			snapshotUpdated: false,
+		};
+	},
+	[EViewsActionTypes.SET_ACTIVE_SNAPSHOT_ERC]: (state, erc) => {
+		return {
+			...state,
+			activeSnapshotERC: erc,
 			snapshotUpdated: false,
 		};
 	},
