@@ -19,8 +19,6 @@ interface IEmptyStateProps {
 }
 
 const DEFAULT_SEARCH_STATE_IMAGE = '/states/search_state.svg';
-const DEFAULT_SEARCH_STATE_REDUCED_MOTION_IMAGE =
-	'/states/search_state_reduced_motion.svg';
 
 const getImgSrc = (image: string) =>
 	`${Liferay.ThemeDisplay.getPathThemeImages()}${image}`;
@@ -50,10 +48,6 @@ const EmptyState = ({
 					)
 				}
 				imgSrc={getImgSrc(config?.image ?? DEFAULT_SEARCH_STATE_IMAGE)}
-				imgSrcReducedMotion={getImgSrc(
-					config?.imageReducedMotion ??
-						DEFAULT_SEARCH_STATE_REDUCED_MOTION_IMAGE
-				)}
 				title={
 					config?.title ?? Liferay.Language.get('no-results-found')
 				}
@@ -74,10 +68,6 @@ const EmptyState = ({
 					Liferay.Language.get('review-your-filters-and-try-again')
 				}
 				imgSrc={getImgSrc(config?.image ?? DEFAULT_SEARCH_STATE_IMAGE)}
-				imgSrcReducedMotion={getImgSrc(
-					config?.imageReducedMotion ??
-						DEFAULT_SEARCH_STATE_REDUCED_MOTION_IMAGE
-				)}
 				title={
 					config?.title ?? Liferay.Language.get('no-results-found')
 				}
@@ -98,10 +88,6 @@ const EmptyState = ({
 					Liferay.Language.get('review-your-search-and-try-again')
 				}
 				imgSrc={getImgSrc(config?.image ?? DEFAULT_SEARCH_STATE_IMAGE)}
-				imgSrcReducedMotion={getImgSrc(
-					config?.imageReducedMotion ??
-						DEFAULT_SEARCH_STATE_REDUCED_MOTION_IMAGE
-				)}
 				title={
 					config?.title ?? Liferay.Language.get('no-results-found')
 				}
@@ -121,10 +107,6 @@ const EmptyState = ({
 			}
 			imgSrc={getImgSrc(
 				emptyStateConfiguration?.image ?? DEFAULT_SEARCH_STATE_IMAGE
-			)}
-			imgSrcReducedMotion={getImgSrc(
-				emptyStateConfiguration?.imageReducedMotion ??
-					DEFAULT_SEARCH_STATE_REDUCED_MOTION_IMAGE
 			)}
 			title={
 				emptyStateConfiguration?.title ??
