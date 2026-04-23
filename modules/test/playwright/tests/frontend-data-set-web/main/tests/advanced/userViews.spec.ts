@@ -207,3 +207,115 @@ test(
 		});
 	}
 );
+
+test(
+	'Set and remove a user view as default',
+	{
+		tag: ['@LPS-178052'],
+	},
+	async ({fdsSamplePage, page}) => {
+		const viewName = getRandomString();
+
+		await test.step('Create a user view', async () => {
+			await fdsSamplePage.userViewsActionsButton.click();
+
+			await fdsSamplePage.dropdownMenu
+				.getByRole('menuitem', {name: 'Save View As...'})
+				.click();
+
+			await expect(fdsSamplePage.userViewsSaveModal).toBeInViewport();
+
+			await fdsSamplePage.userViewsSaveModal
+				.getByLabel('NameRequired')
+				.fill(viewName);
+
+			await fdsSamplePage.userViewsSaveModal
+				.getByRole('button', {name: 'Save'})
+				.click();
+
+			await expect(fdsSamplePage.userViewsSelectorButton).toHaveText(
+				viewName
+			);
+		});
+
+		await test.step('Set the user view as default', async () => {
+			await fdsSamplePage.userViewsActionsButton.click();
+
+			const setDefaultMenuItem = fdsSamplePage.dropdownMenu.getByRole(
+				'menuitem',
+				{name: 'Set as Default View'}
+			);
+
+			await expect(setDefaultMenuItem).toBeVisible();
+
+			await setDefaultMenuItem.click();
+
+			await fdsSamplePage.userViewsActionsButton.click();
+
+			await expect(
+				fdsSamplePage.dropdownMenu.getByRole('menuitem', {
+					name: 'Remove Default View',
+				})
+			).toBeVisible();
+
+			await page.keyboard.press('Escape');
+
+			await fdsSamplePage.userViewsSelectorButton.click();
+
+			await expect(
+				fdsSamplePage.dropdownMenu
+					.getByRole('option', {name: viewName})
+					.locator('.default-view-mark')
+			).toBeVisible();
+
+			await page.keyboard.press('Escape');
+		});
+
+		await test.step('Remove the default view', async () => {
+			await fdsSamplePage.userViewsActionsButton.click();
+
+			const removeDefaultMenuItem = fdsSamplePage.dropdownMenu.getByRole(
+				'menuitem',
+				{name: 'Remove Default View'}
+			);
+
+			await expect(removeDefaultMenuItem).toBeVisible();
+
+			await removeDefaultMenuItem.click();
+
+			await fdsSamplePage.userViewsActionsButton.click();
+
+			await expect(
+				fdsSamplePage.dropdownMenu.getByRole('menuitem', {
+					name: 'Set as Default View',
+				})
+			).toBeVisible();
+
+			await page.keyboard.press('Escape');
+
+			await fdsSamplePage.userViewsSelectorButton.click();
+
+			await expect(
+				fdsSamplePage.dropdownMenu
+					.getByRole('option', {name: viewName})
+					.locator('.default-view-mark')
+			).not.toBeVisible();
+
+			await page.keyboard.press('Escape');
+		});
+
+		await test.step('Delete the user view', async () => {
+			await fdsSamplePage.userViewsActionsButton.click();
+
+			await fdsSamplePage.dropdownMenu
+				.getByRole('menuitem', {name: 'Delete View'})
+				.click();
+
+			await expect(fdsSamplePage.userViewsDeleteAlert).toBeVisible();
+
+			await fdsSamplePage.userViewsDeleteAlert
+				.getByRole('button', {name: 'Delete'})
+				.click();
+		});
+	}
+);

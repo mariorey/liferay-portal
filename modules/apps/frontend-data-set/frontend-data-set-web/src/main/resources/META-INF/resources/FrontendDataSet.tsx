@@ -715,7 +715,9 @@ const FrontendDataSetContent = ({
 		});
 	}, [globalFDSState, setGlobalFDSState]);
 
+	const defaultSnapshotAppliedRef = useRef(false);
 	const skipSnapshotsUpdatedChangeRef = useRef(true);
+	const skipSnapshotUpdatedAfterDefaultApplyRef = useRef(false);
 
 	useEffect(() => {
 		if (
@@ -732,6 +734,149 @@ const FrontendDataSetContent = ({
 		filterClientExtensionsLoaded,
 		globalFDSStateInitialized,
 	]);
+
+	useEffect(() => {
+		if (!globalFDSStateInitialized || defaultSnapshotAppliedRef.current) {
+			return;
+		}
+
+		defaultSnapshotAppliedRef.current = true;
+
+		if (readConfigFromURL(id)) {
+			const normalizeSorts = (sorts: TSort[]) =>
+				(sorts || [])
+					.filter((s: TSort) => s.active)
+					.map((s: TSort) => ({direction: s.direction, key: s.key}))
+					.sort((a, b) => a.key.localeCompare(b.key));
+
+			const normalizeSelectedItems = (items: any[]) =>
+				(items || [])
+					.map(({value}: {value: any}) => ({value}))
+					.sort((a, b) =>
+						String(a.value).localeCompare(String(b.value))
+					);
+
+			const normalizeSelectedData = (selectedData: any) => {
+				if (!selectedData) {
+					return selectedData;
+				}
+
+				if (Array.isArray(selectedData.selectedItems)) {
+					return {
+						...selectedData,
+						selectedItems: normalizeSelectedItems(
+							selectedData.selectedItems
+						),
+					};
+				}
+
+				return selectedData;
+			};
+
+			const normalizeFilters = (filters: IBaseFilterState[]) =>
+				(filters || [])
+					.filter((f: IBaseFilterState) => f.active)
+					.map((f: IBaseFilterState) => ({
+						id: f.id,
+						selectedData: normalizeSelectedData(f.selectedData),
+					}))
+					.sort((a, b) => a.id.localeCompare(b.id));
+
+			const matchingSnapshot = viewsState.snapshots?.find(
+				(snapshot: ISnapshot) => {
+					const config = snapshot.configuration;
+
+					return (
+						config.activeView?.name ===
+							viewsState.activeView?.name &&
+						config.paginationDelta ===
+							viewsState.paginationDelta &&
+						JSON.stringify(
+							normalizeSorts(viewsState.sorts)
+						) ===
+							JSON.stringify(
+								normalizeSorts(config.sorts)
+							) &&
+						JSON.stringify(
+							normalizeFilters(globalFDSState.filters)
+						) ===
+							JSON.stringify(
+								normalizeFilters(config.filters)
+							)
+					);
+				}
+			);
+
+			if (matchingSnapshot) {
+				skipSnapshotsUpdatedChangeRef.current = true;
+
+				viewsDispatch({
+					type: EViewsActionTypes.SET_ACTIVE_SNAPSHOT_ERC,
+					value: matchingSnapshot.erc,
+				});
+
+				return;
+			}
+
+			const hasEffectiveURLConfig =
+				getView() !== undefined ||
+				getDelta() !== undefined ||
+				(getActiveSorts()?.length ?? 0) > 0 ||
+				(getFilters()?.length ?? 0) > 0;
+
+			if (hasEffectiveURLConfig) {
+				const defaultUserSnapshot = viewsState.snapshots?.find(
+					(snapshot: ISnapshot) => snapshot.default
+				);
+
+				if (defaultUserSnapshot) {
+					viewsDispatch({
+						type: EViewsActionTypes.BATCH_UPDATE,
+						value: [
+							{
+								type: EViewsActionTypes.SET_ACTIVE_SNAPSHOT_ERC,
+								value: defaultUserSnapshot.erc,
+							},
+							{
+								type: EViewsActionTypes.UPDATE_SNAPSHOT_UPDATED,
+								value: true,
+							},
+						],
+					});
+				}
+			}
+
+			return;
+		}
+
+		const defaultUserSnapshot = viewsState.snapshots?.find(
+			(snapshot: ISnapshot) => snapshot.default
+		);
+
+		if (!defaultUserSnapshot) {
+			return;
+		}
+
+		// Apply the default snapshot directly without writing to the URL.
+		// Writing to the URL (via handleSnapshotChange) would cause reloads
+		// to skip re-applying the default snapshot (URL config takes priority)
+		// and can cause snapshotUpdated to briefly appear true.
+
+		const snapshot = deepClone(defaultUserSnapshot);
+
+		skipSnapshotUpdatedAfterDefaultApplyRef.current = true;
+		skipSnapshotsUpdatedChangeRef.current = true;
+
+		viewsDispatch({
+			type: EViewsActionTypes.UPDATE_ACTIVE_SNAPSHOT,
+			value: snapshot,
+		});
+
+		setGlobalFDSState({
+			...deepClone(globalFDSState),
+			filters: snapshot.configuration.filters,
+		});
+	}, [globalFDSStateInitialized]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	useEffect(() => {
 		if (!globalFDSStateInitialized) {
@@ -780,6 +925,9 @@ const FrontendDataSetContent = ({
 
 		if (skipSnapshotsUpdatedChangeRef.current) {
 			skipSnapshotsUpdatedChangeRef.current = false;
+		}
+		else if (skipSnapshotUpdatedAfterDefaultApplyRef.current) {
+			skipSnapshotUpdatedAfterDefaultApplyRef.current = false;
 		}
 		else {
 			viewsDispatch({

@@ -22,6 +22,7 @@ export interface IViewsContext {
 
 export interface ISnapshot {
 	configuration?: any;
+	default?: boolean;
 	erc: string;
 	label: string;
 }
