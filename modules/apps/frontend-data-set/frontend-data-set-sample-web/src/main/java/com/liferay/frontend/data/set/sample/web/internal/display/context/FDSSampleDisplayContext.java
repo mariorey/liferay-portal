@@ -51,9 +51,6 @@ public class FDSSampleDisplayContext {
 				).put(
 					"image", "/states/empty_state.svg"
 				).put(
-					"imageReducedMotion",
-					"/states/empty_state_reduced_motion.svg"
-				).put(
 					"title",
 					LanguageUtil.get(
 						_fdsRequestHelper.getRequest(), "custom-title")
