@@ -1,0 +1,15 @@
+{
+	"dependencies": {
+		"react": "^18.2.0"
+	},
+	"description": "Liferay Sample Frontend Data Set Visualization Mode Product Catalog",
+	"devDependencies": {
+		"esbuild": "^0.25.0"
+	},
+	"name": "@liferay/liferay-sample-fds-visualization-mode-product-catalog",
+	"private": true,
+	"scripts": {
+		"build": "esbuild src/index.jsx --outdir=build/static --bundle --entry-names=[name].[hash] --format=esm --external:react --loader:.jsx=jsx"
+	},
+	"version": "0.0.0"
+}

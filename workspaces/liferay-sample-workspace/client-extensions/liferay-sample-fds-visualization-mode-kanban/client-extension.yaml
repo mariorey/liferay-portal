@@ -1,0 +1,8 @@
+assemble:
+    -   from: build/static
+        into: static
+liferay-sample-fds-visualization-mode-kanban:
+    name: Liferay Sample Kanban Board
+    thumbnail: columns
+    type: fdsVisualizationMode
+    url: index.*.js

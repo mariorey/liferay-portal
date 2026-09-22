@@ -1,0 +1,8 @@
+assemble:
+    -   from: build/static
+        into: static
+liferay-sample-fds-visualization-mode-product-catalog:
+    name: Liferay Sample Product Catalog
+    thumbnail: grid
+    type: fdsVisualizationMode
+    url: index.*.js
