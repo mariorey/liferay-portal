@@ -95,6 +95,7 @@ import {
 } from './utils/types';
 import useConfigInURL, {useUpdateConfig} from './utils/useConfigInURL';
 import ViewErrorBoundary from './views/ViewErrorBoundary';
+import ViewErrorMessage from './views/ViewErrorMessage';
 import ViewsContext, {ISnapshot, ISnapshots} from './views/ViewsContext';
 import getViewComponent from './views/getViewComponent';
 import viewsReducer, {EViewsActionTypes} from './views/viewsReducer';
@@ -394,6 +395,9 @@ const FrontendDataSetContent = ({
 	const [filterClientExtensionsLoading, setFilterClientExtensionsLoading] =
 		useState(false);
 	const [componentLoading, setComponentLoading] = useState(false);
+	const [componentErrorViewName, setComponentErrorViewName] = useState<
+		null | string
+	>(null);
 	const [creationMenu, setCreationMenu] = useState(initialCreationMenu);
 	const [dataLoading, setDataLoading] = useState(!!apiURL);
 	const dataSetSupportInfoPanelIdRef = useRef(
@@ -1392,30 +1396,54 @@ const FrontendDataSetContent = ({
 		]
 	);
 
+	// A view whose component comes from a client extension has to be imported
+	// before it can render. Every exit from this effect has to clear the
+	// loading flag, including the abandoned one: leaving it set strands the
+	// data set on a loading indicator that no view change can clear, and only
+	// a page reload gets out of it.
+
 	useEffect(() => {
 		if (View || !contentRendererModuleURL) {
+			setComponentLoading(false);
+
 			return;
 		}
 
+		let abandoned = false;
+
 		setComponentLoading(true);
+		setComponentErrorViewName(null);
 
 		loadModule(contentRendererModuleURL)
 			.then((view: IView) => {
-				if (isMounted()) {
-					viewsDispatch({
-						type: EViewsActionTypes.UPDATE_VIEW_COMPONENT,
-						value: {component: view, name: activeViewName},
-					});
-
-					setComponentLoading(false);
+				if (abandoned || !isMounted()) {
+					return;
 				}
-			})
-			.catch(() => {
-				openToast({
-					message: Liferay.Language.get('unexpected-error'),
-					type: 'danger',
+
+				viewsDispatch({
+					type: EViewsActionTypes.UPDATE_VIEW_COMPONENT,
+					value: {component: view, name: activeViewName},
 				});
+
+				setComponentLoading(false);
+			})
+			.catch((error: unknown) => {
+				if (abandoned || !isMounted()) {
+					return;
+				}
+
+				logError(
+					`Unable to load view "${activeViewName}" from ` +
+						`"${contentRendererModuleURL}": ${error}`
+				);
+
+				setComponentLoading(false);
+				setComponentErrorViewName(activeViewName);
 			});
+
+		return () => {
+			abandoned = true;
+		};
 	}, [
 		View,
 		activeViewName,
@@ -1645,12 +1673,27 @@ const FrontendDataSetContent = ({
 		);
 	};
 
-	// A view whose component comes from a client extension is undefined until
-	// `contentRendererModuleURL` has been imported, which happens in an effect
-	// and therefore after the first render.
+	// `View` is undefined until a client extension module has been imported,
+	// which happens in an effect and therefore after the first render. The
+	// three states are distinct: the module failed to load, the module or the
+	// data is still on its way, or the view can render.
 
-	const view =
-		!dataLoading && !componentLoading && View ? (
+	const viewContent = () => {
+		if (componentErrorViewName === activeViewName) {
+			return (
+				<ViewErrorMessage
+					messageKey="this-view-was-unable-to-load"
+					viewLabel={activeView.label}
+					viewLabelMessageKey="the-x-view-was-unable-to-load"
+				/>
+			);
+		}
+
+		if (dataLoading || componentLoading || !View) {
+			return <ClayLoadingIndicator className="my-7" />;
+		}
+
+		return (
 			<div className="data-set-content-wrapper">
 				<input
 					name={`${namespace || id + '_'}${
@@ -1719,9 +1762,10 @@ const FrontendDataSetContent = ({
 					/>
 				)}
 			</div>
-		) : (
-			<ClayLoadingIndicator className="my-7" />
 		);
+	};
+
+	const view = viewContent();
 
 	const paginationComponent = paginationEnabled ? (
 		<div className="data-set-pagination-wrapper">
