@@ -254,6 +254,8 @@ public class ObjectDefinitionUtil {
 		).put(
 			"DataSetUserConfiguration", "/data-set-admin/user-configurations"
 		).put(
+			"DataSetVisualizationMode", "/data-set-admin/visualization-modes"
+		).put(
 			"DSRRoom", "/digital-sales-room/rooms"
 		).put(
 			"FunctionalCookieEntry", "/functional-cookies-entries"

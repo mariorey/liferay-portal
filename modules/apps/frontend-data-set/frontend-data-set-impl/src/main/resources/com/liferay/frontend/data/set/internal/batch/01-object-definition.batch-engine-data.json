@@ -493,6 +493,24 @@
 					"reverse": false,
 					"system": true,
 					"type": "oneToMany"
+				},
+				{
+					"deletionType": "cascade",
+					"edge": true,
+					"externalReferenceCode": "L_DATA_SET_TO_DATA_SET_VISUALIZATION_MODES",
+					"label": {
+						"en_US": "Data Set to Data Set Visualization Modes"
+					},
+					"name": "dataSetToDataSetVisualizationModes",
+					"objectDefinitionExternalReferenceCode1": "L_DATA_SET",
+					"objectDefinitionExternalReferenceCode2": "L_DATA_SET_VISUALIZATION_MODE",
+					"objectDefinitionName2": "DataSetVisualizationMode",
+					"objectDefinitionSystem2": true,
+					"parameterObjectFieldId": 0,
+					"parameterObjectFieldName": "",
+					"reverse": false,
+					"system": true,
+					"type": "oneToMany"
 				}
 			],
 			"pluralLabel": {
@@ -1682,6 +1700,85 @@
 			"panelCategoryKey": "",
 			"pluralLabel": {
 				"en_US": "Data Set Table Sections"
+			},
+			"portlet": false,
+			"rootObjectDefinitionExternalReferenceCode": "L_DATA_SET",
+			"scope": "company",
+			"status": {
+				"code": 0
+			},
+			"system": true
+		},
+		{
+			"className": "com.liferay.object.model.ObjectDefinition#V1M3",
+			"enableFormContainer": false,
+			"enableLocalization": true,
+			"externalReferenceCode": "L_DATA_SET_VISUALIZATION_MODE",
+			"label": {
+				"en_US": "Data Set Visualization Mode"
+			},
+			"modifiable": true,
+			"name": "DataSetVisualizationMode",
+			"objectDefinitionSettings": [
+				{
+					"name": "allowStandaloneObjectEntry",
+					"value": "false"
+				}
+			],
+			"objectFields": [
+				{
+					"DBType": "Boolean",
+					"businessType": "Boolean",
+					"defaultValue": true,
+					"externalReferenceCode": "ACTIVE",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Active"
+					},
+					"localized": false,
+					"name": "active",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "Boolean"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "CLIENT_EXTENSION_ENTRY_ERC",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Client Extension Entry ERC"
+					},
+					"localized": false,
+					"name": "clientExtensionEntryERC",
+					"required": true,
+					"state": false,
+					"system": true,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "LABEL",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Label"
+					},
+					"localized": true,
+					"name": "label",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "String"
+				}
+			],
+			"panelCategoryKey": "",
+			"pluralLabel": {
+				"en_US": "Data Set Visualization Modes"
 			},
 			"portlet": false,
 			"rootObjectDefinitionExternalReferenceCode": "L_DATA_SET",
