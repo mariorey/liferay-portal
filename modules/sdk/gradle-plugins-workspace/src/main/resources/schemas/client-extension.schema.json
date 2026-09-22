@@ -205,6 +205,23 @@
 					],
 					"description": "Description for fdsFilter"
 				},
+				"fdsVisualizationMode": {
+					"allOf": [
+						{
+							"$ref": "#/definitions/propertySets/properties/url"
+						},
+						{
+							"properties": {
+								"thumbnail": {
+									"default": "cards2",
+									"description": "The Clay icon that represents this visualization mode in the data set toolbar.",
+									"type": "string"
+								}
+							}
+						}
+					],
+					"description": "Description for fdsVisualizationMode"
+				},
 				"globalCSS": {
 					"allOf": [
 						{
@@ -509,6 +526,14 @@
 					}
 				},
 				{
+					"$ref": "#/definitions/types/properties/fdsVisualizationMode",
+					"properties": {
+						"type": {
+							"const": "fdsVisualizationMode"
+						}
+					}
+				},
+				{
 					"$ref": "#/definitions/types/properties/globalCSS",
 					"properties": {
 						"type": {
@@ -659,6 +684,7 @@
 						"editorConfigContributor",
 						"fdsCellRenderer",
 						"fdsFilter",
+						"fdsVisualizationMode",
 						"globalCSS",
 						"globalJS",
 						"iframe",
