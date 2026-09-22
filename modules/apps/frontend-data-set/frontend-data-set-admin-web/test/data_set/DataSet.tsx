@@ -53,6 +53,7 @@ const DEFAULT_PROPS = {
 	saveDataSetSortURL: '/save-data-set-sort',
 	saveDataSetTableSectionsURL: '/save-data-set-table-sections',
 	spritemap: '/spritemap.svg',
+	visualizationModeClientExtensions: [],
 };
 
 describe('DataSet', () => {

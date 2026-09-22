@@ -26,7 +26,10 @@ import {
 import getDataSetResourceURL from '../../utils/getDataSetResourceURL';
 import openDefaultFailureToast from '../../utils/openDefaultFailureToast';
 import openDefaultSuccessToast from '../../utils/openDefaultSuccessToast';
-import {TVisualizationMode} from '../../utils/types';
+import {
+	IClientExtensionVisualizationMode,
+	TVisualizationMode,
+} from '../../utils/types';
 import {IDataSetSectionProps} from '../DataSet';
 
 const NOT_CONFIGURED_VISUALIZATION_MODE = {
@@ -143,6 +146,7 @@ const Settings = ({
 				OBJECT_RELATIONSHIP.DATA_SET_CARDS_SECTIONS,
 				OBJECT_RELATIONSHIP.DATA_SET_LIST_SECTIONS,
 				OBJECT_RELATIONSHIP.DATA_SET_TABLE_SECTIONS,
+				OBJECT_RELATIONSHIP.DATA_SET_VISUALIZATION_MODES,
 			].join(',');
 
 			const url = getDataSetResourceURL({
@@ -178,6 +182,8 @@ const Settings = ({
 					[OBJECT_RELATIONSHIP.DATA_SET_CARDS_SECTIONS]: cards,
 					[OBJECT_RELATIONSHIP.DATA_SET_LIST_SECTIONS]: list,
 					[OBJECT_RELATIONSHIP.DATA_SET_TABLE_SECTIONS]: table,
+					[OBJECT_RELATIONSHIP.DATA_SET_VISUALIZATION_MODES]:
+						clientExtensionModes,
 				} = responseJSON;
 
 				const activeViews: Array<TVisualizationMode> = [];
@@ -195,6 +201,24 @@ const Settings = ({
 						activeViews.push(view);
 					}
 				});
+
+				(clientExtensionModes ?? []).forEach(
+					(
+						clientExtensionMode: IClientExtensionVisualizationMode
+					) => {
+						if (!clientExtensionMode.active) {
+							return;
+						}
+
+						activeViews.push({
+							label:
+								clientExtensionMode.label ||
+								clientExtensionMode.clientExtensionEntryERC,
+							mode: clientExtensionMode.clientExtensionEntryERC,
+							thumbnail: 'cards2',
+						} as TVisualizationMode);
+					}
+				);
 
 				setVisualizationModes(activeViews);
 

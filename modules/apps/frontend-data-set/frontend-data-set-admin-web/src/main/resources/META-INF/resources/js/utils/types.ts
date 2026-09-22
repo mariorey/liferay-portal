@@ -86,6 +86,19 @@ export interface IClientExtensionFilter extends IFilter {
 	clientExtensionEntryERC: string;
 }
 
+export interface IClientExtensionVisualizationMode {
+	active: boolean;
+	clientExtensionEntryERC: string;
+	externalReferenceCode: string;
+	id: number;
+	label?: string;
+}
+
+export interface IVisualizationModeClientExtension {
+	externalReferenceCode: string;
+	name: string;
+}
+
 export interface IDataSet {
 	actions: {
 		delete: {
