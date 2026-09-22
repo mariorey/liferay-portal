@@ -166,6 +166,24 @@ public class FDSAdminDisplayContext {
 			));
 	}
 
+	public JSONArray getFDSVisualizationModeCETsJSONArray() throws Exception {
+		ThemeDisplay themeDisplay = (ThemeDisplay)_renderRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		return JSONUtil.toJSONArray(
+			_cetManager.getCETs(
+				themeDisplay.getCompanyId(), null,
+				ClientExtensionEntryConstants.TYPE_FDS_VISUALIZATION_MODE,
+				Pagination.of(QueryUtil.ALL_POS, QueryUtil.ALL_POS), null),
+			fdsVisualizationModeCET -> JSONUtil.put(
+				"externalReferenceCode",
+				fdsVisualizationModeCET.getExternalReferenceCode()
+			).put(
+				"name",
+				fdsVisualizationModeCET.getName(themeDisplay.getLocale())
+			));
+	}
+
 	public String getImportSystemDataSetURL() {
 		ResourceURL resourceURL =
 			(ResourceURL)PortalUtil.getControlPanelPortletURL(

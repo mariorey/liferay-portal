@@ -10,6 +10,7 @@ import React, {ComponentType, useState} from 'react';
 import {DEFAULT_VISUALIZATION_MODES} from '../../utils/constants';
 import {TVisualizationMode} from '../../utils/types';
 import {IDataSetSectionProps} from '../DataSet';
+import ClientExtensionVisualizationModes from './components/ClientExtensionVisualizationModes';
 import Cards from './modes/Cards';
 import List from './modes/List';
 import Table from './modes/Table';
@@ -74,6 +75,13 @@ export default function VisualizationModes(props: IDataSetSectionProps) {
 						}
 					)}
 				</ClayTabs.Content>
+
+				<ClientExtensionVisualizationModes
+					dataSet={props.dataSet}
+					visualizationModeClientExtensions={
+						props.visualizationModeClientExtensions
+					}
+				/>
 			</ClayLayout.Sheet>
 		</ClayLayout.ContainerFluid>
 	);
