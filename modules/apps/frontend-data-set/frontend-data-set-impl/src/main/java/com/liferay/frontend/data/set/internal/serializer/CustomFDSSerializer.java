@@ -7,6 +7,7 @@ package com.liferay.frontend.data.set.internal.serializer;
 
 import com.liferay.client.extension.type.FDSCellRendererCET;
 import com.liferay.client.extension.type.FDSFilterCET;
+import com.liferay.client.extension.type.FDSVisualizationModeCET;
 import com.liferay.client.extension.type.manager.CETManager;
 import com.liferay.frontend.data.set.FDSEntryItemImportPolicy;
 import com.liferay.frontend.data.set.action.util.FDSActionUtil;
@@ -834,6 +835,58 @@ public class CustomFDSSerializer
 			}
 		);
 
+		// A visualization mode client extension is offered only where the Data
+		// Set Manager enabled it, the same way a client extension filter is
+		// picked per data set (LPD-9599).
+
+		for (ObjectEntry objectEntry :
+				getRelatedObjectEntries(
+					fdsName, httpServletRequest, this::_isActive,
+					"dataSetToDataSetVisualizationModes")) {
+
+			Map<String, Object> properties = objectEntry.getProperties();
+
+			String clientExtensionEntryERC = MapUtil.getString(
+				properties, "clientExtensionEntryERC");
+
+			FDSVisualizationModeCET fdsVisualizationModeCET =
+				(FDSVisualizationModeCET)cetManager.getCET(
+					PortalUtil.getCompanyId(httpServletRequest),
+					clientExtensionEntryERC);
+
+			if (fdsVisualizationModeCET == null) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						"No frontend data set visualization mode client " +
+							"extension type found for " +
+								clientExtensionEntryERC);
+				}
+
+				continue;
+			}
+
+			jsonArray.put(
+				JSONUtil.put(
+					"contentRenderer", clientExtensionEntryERC
+				).put(
+					"contentRendererClientExtension", true
+				).put(
+					"contentRendererModuleURL",
+					"default from " + fdsVisualizationModeCET.getURL()
+				).put(
+					"default",
+					defaultVisualizationMode.equals(clientExtensionEntryERC)
+				).put(
+					"label",
+					_getVisualizationModeLabel(
+						fdsVisualizationModeCET, httpServletRequest, properties)
+				).put(
+					"name", clientExtensionEntryERC
+				).put(
+					"thumbnail", fdsVisualizationModeCET.getThumbnail()
+				));
+		}
+
 		return jsonArray;
 	}
 
@@ -1050,6 +1103,20 @@ public class CustomFDSSerializer
 		Map<String, Object> properties = objectEntry.getProperties();
 
 		return GetterUtil.getString(properties.get("type"));
+	}
+
+	private String _getVisualizationModeLabel(
+		FDSVisualizationModeCET fdsVisualizationModeCET,
+		HttpServletRequest httpServletRequest, Map<String, Object> properties) {
+
+		String label = MapUtil.getString(properties, "label");
+
+		if (Validator.isNotNull(label)) {
+			return label;
+		}
+
+		return fdsVisualizationModeCET.getName(
+			PortalUtil.getLocale(httpServletRequest));
 	}
 
 	private Boolean _isActive(ObjectEntry objectEntry) {
