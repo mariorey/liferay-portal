@@ -94,6 +94,7 @@ import {
 	VisibleFieldNames,
 } from './utils/types';
 import useConfigInURL, {useUpdateConfig} from './utils/useConfigInURL';
+import ViewErrorBoundary from './views/ViewErrorBoundary';
 import ViewsContext, {ISnapshot, ISnapshots} from './views/ViewsContext';
 import getViewComponent from './views/getViewComponent';
 import viewsReducer, {EViewsActionTypes} from './views/viewsReducer';
@@ -1644,8 +1645,12 @@ const FrontendDataSetContent = ({
 		);
 	};
 
+	// A view whose component comes from a client extension is undefined until
+	// `contentRendererModuleURL` has been imported, which happens in an effect
+	// and therefore after the first render.
+
 	const view =
-		!dataLoading && !componentLoading ? (
+		!dataLoading && !componentLoading && View ? (
 			<div className="data-set-content-wrapper">
 				<input
 					name={`${namespace || id + '_'}${
@@ -1659,45 +1664,50 @@ const FrontendDataSetContent = ({
 				{items?.length ||
 				overrideEmptyResultView ||
 				inlineAddingSettings ? (
-					<View
-						frontendDataSetContext={FrontendDataSetContext}
-						header={header}
-						items={items}
-						itemsActions={itemsActions}
-						onItemSelectionChange={(
-							selectedItem: ISelectionFilterStateItem,
-							forceSingleSelection: boolean
-						) => {
-							if (allItemsSelectedActive) {
-								setSelectedItems(
-									items.filter(
-										(item) =>
-											getObjectValueFromPath({
-												object: item,
-												path: selectedItemsKey,
-											}) !==
-											getObjectValueFromPath({
-												object: selectedItem,
-												path: selectedItemsKey,
-											})
-									)
-								);
+					<ViewErrorBoundary
+						key={activeViewName}
+						viewLabel={activeView.label}
+					>
+						<View
+							frontendDataSetContext={FrontendDataSetContext}
+							header={header}
+							items={items}
+							itemsActions={itemsActions}
+							onItemSelectionChange={(
+								selectedItem: ISelectionFilterStateItem,
+								forceSingleSelection: boolean
+							) => {
+								if (allItemsSelectedActive) {
+									setSelectedItems(
+										items.filter(
+											(item) =>
+												getObjectValueFromPath({
+													object: item,
+													path: selectedItemsKey,
+												}) !==
+												getObjectValueFromPath({
+													object: selectedItem,
+													path: selectedItemsKey,
+												})
+										)
+									);
 
-								setAllItemsSelectedActive(false);
-							}
-							else {
-								selectItems(
-									getObjectValueFromPath({
-										object: selectedItem,
-										path: selectedItemsKey,
-									}),
-									forceSingleSelection
-								);
-							}
-						}}
-						style={style}
-						{...currentViewProps}
-					/>
+									setAllItemsSelectedActive(false);
+								}
+								else {
+									selectItems(
+										getObjectValueFromPath({
+											object: selectedItem,
+											path: selectedItemsKey,
+										}),
+										forceSingleSelection
+									);
+								}
+							}}
+							style={style}
+							{...currentViewProps}
+						/>
+					</ViewErrorBoundary>
 				) : (
 					<EmptyState
 						creationMenu={creationMenu}
