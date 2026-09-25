@@ -212,6 +212,10 @@
 						},
 						{
 							"properties": {
+								"schemaURL": {
+									"description": "A JavaScript module declaring the fields this visualization mode expects, so that a data set can map them.",
+									"type": "string"
+								},
 								"thumbnail": {
 									"default": "cards2",
 									"description": "The Clay icon that represents this visualization mode in the data set toolbar.",

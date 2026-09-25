@@ -22,6 +22,14 @@ FDSVisualizationModeCET fdsVisualizationModeCET = editClientExtensionEntryDispla
 </aui:field-wrapper>
 
 <aui:field-wrapper cssClass="form-group">
+	<aui:input label="schema-js-url" name="schemaURL" type="text" value="<%= fdsVisualizationModeCET.getSchemaURL() %>" />
+
+	<div class="form-text">
+		<liferay-ui:message key="optionally-enter-the-url-of-a-javascript-file-declaring-the-fields-this-visualization-mode-expects-so-that-a-data-set-can-map-them" />
+	</div>
+</aui:field-wrapper>
+
+<aui:field-wrapper cssClass="form-group">
 	<aui:input label="icon" name="thumbnail" type="text" value="<%= fdsVisualizationModeCET.getThumbnail() %>" />
 
 	<div class="form-text">

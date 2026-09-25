@@ -49,6 +49,8 @@ public class FDSVisualizationModeCETImplFactoryImpl
 		return UnicodePropertiesBuilder.create(
 			true
 		).put(
+			"schemaURL", ParamUtil.getString(portletRequest, "schemaURL")
+		).put(
 			"thumbnail", ParamUtil.getString(portletRequest, "thumbnail")
 		).put(
 			"url", ParamUtil.getString(portletRequest, "url")

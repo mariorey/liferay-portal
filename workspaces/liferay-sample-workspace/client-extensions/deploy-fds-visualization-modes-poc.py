@@ -32,6 +32,9 @@ PROJECTS = [
     {
         "label": "Liferay Sample Kanban Board",
         "name": "liferay-sample-fds-visualization-mode-kanban",
+        # Declaring a schema is optional. This one does, so the Data Set
+        # Manager offers a field mapping form for it.
+        "schema": True,
         "thumbnail": "columns",
     },
     {
@@ -49,9 +52,14 @@ for project in PROJECTS:
         for stale in os.listdir(static_dir):
             os.remove(f"{static_dir}/{stale}")
 
+    entry_points = ["src/index.jsx"]
+
+    if project.get("schema"):
+        entry_points.append("src/schema.js")
+
     subprocess.run(
         [
-            "npx", "--yes", "esbuild@0.25.0", "src/index.jsx",
+            "npx", "--yes", "esbuild@0.25.0", *entry_points,
             "--outdir=build/static", "--bundle", "--entry-names=[name].[hash]",
             "--format=esm", "--external:react", "--loader:.jsx=jsx",
             "--minify",
@@ -60,9 +68,13 @@ for project in PROJECTS:
         cwd=name,
     )
 
-    js = [f for f in os.listdir(static_dir) if f.endswith(".js")]
-    assert len(js) == 1, (name, js)
-    js = js[0]
+    built = sorted(f for f in os.listdir(static_dir) if f.endswith(".js"))
+
+    js = next(f for f in built if f.startswith("index."))
+
+    schema_js = next((f for f in built if f.startswith("schema.")), None)
+
+    assert bool(schema_js) == bool(project.get("schema")), (name, built)
 
     project_id = re.sub(r"[^a-z0-9]", "", name.lower())
 
@@ -80,6 +92,7 @@ for project in PROJECTS:
             "sourceCodeURL": "",
             "type": "fdsVisualizationMode",
             "typeSettings": [
+                *([f"schemaURL={schema_js}"] if schema_js else []),
                 f"thumbnail={project['thumbnail']}",
                 f"url={js}",
             ],
@@ -100,8 +113,9 @@ for project in PROJECTS:
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
         zf.writestr(f"{name}.client-extension-config.json", json.dumps(config, indent=4))
         zf.writestr("WEB-INF/liferay-plugin-package.properties", plugin_package)
-        zf.write(f"{static_dir}/{js}", f"static/{js}")
+        for built_js in built:
+            zf.write(f"{static_dir}/{built_js}", f"static/{built_js}")
 
     os.replace(zip_path, f"{BUNDLES}/osgi/client-extensions/{name}.zip")
 
-    print("deployed", name, js)
+    print("deployed", name, js, schema_js or "(no schema)")

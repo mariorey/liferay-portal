@@ -17,6 +17,16 @@ import org.osgi.annotation.versioning.ProviderType;
 @ProviderType
 public interface FDSVisualizationModeCET extends CET {
 
+	/**
+	 * Optional. A JavaScript module describing the fields the visualization
+	 * mode expects, so that the Data Set Manager can offer a field mapping
+	 * form for it. A mode that discovers its own fields declares none.
+	 */
+	@CETProperty(
+		defaultValue = "", name = "schemaURL", type = CETProperty.Type.URL
+	)
+	public String getSchemaURL();
+
 	@CETProperty(
 		defaultValue = "cards2", name = "thumbnail",
 		type = CETProperty.Type.String

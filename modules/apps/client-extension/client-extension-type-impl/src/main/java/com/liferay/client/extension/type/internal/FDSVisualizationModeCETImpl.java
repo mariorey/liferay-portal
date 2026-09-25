@@ -37,6 +37,11 @@ public class FDSVisualizationModeCETImpl
 	}
 
 	@Override
+	public String getSchemaURL() {
+		return getString("schemaURL");
+	}
+
+	@Override
 	public String getThumbnail() {
 		String thumbnail = getString("thumbnail");
 
