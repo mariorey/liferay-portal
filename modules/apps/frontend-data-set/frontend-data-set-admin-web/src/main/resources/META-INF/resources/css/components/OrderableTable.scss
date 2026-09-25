@@ -29,6 +29,14 @@ html#{$cadmin-selector} .cadmin.fds-admin {
 			}
 		}
 
+		.orderable-table-row-clickable {
+			cursor: pointer;
+
+			&:hover {
+				background-color: var(--gray-100, #f1f2f5);
+			}
+		}
+
 		.orderable-table-row.dragging {
 			opacity: 0.5;
 

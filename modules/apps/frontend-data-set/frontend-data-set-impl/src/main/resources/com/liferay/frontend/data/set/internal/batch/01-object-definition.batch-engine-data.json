@@ -347,6 +347,22 @@
 					"state": false,
 					"system": true,
 					"type": "Clob"
+				},
+				{
+					"DBType": "Clob",
+					"businessType": "LongText",
+					"externalReferenceCode": "VISUALIZATION_MODES_ORDER",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Visualization Modes Order"
+					},
+					"localized": false,
+					"name": "visualizationModesOrder",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "String"
 				}
 			],
 			"objectRelationships": [
@@ -1755,6 +1771,22 @@
 					"localized": false,
 					"name": "clientExtensionEntryERC",
 					"required": true,
+					"state": false,
+					"system": true,
+					"type": "String"
+				},
+				{
+					"DBType": "Clob",
+					"businessType": "LongText",
+					"externalReferenceCode": "FIELD_MAPPING",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Field Mapping"
+					},
+					"localized": false,
+					"name": "fieldMapping",
+					"required": false,
 					"state": false,
 					"system": true,
 					"type": "String"

@@ -91,6 +91,7 @@ export interface IClientExtensionVisualizationMode {
 	active: boolean;
 	clientExtensionEntryERC: string;
 	externalReferenceCode: string;
+	fieldMapping?: string;
 	id: number;
 	label?: string;
 }
@@ -98,6 +99,29 @@ export interface IClientExtensionVisualizationMode {
 export interface IVisualizationModeClientExtension {
 	externalReferenceCode: string;
 	name: string;
+	schemaURL?: string;
+	thumbnail?: string;
+}
+
+/**
+ * A row of the visualization modes table: a built in mode keyed by its name, or
+ * a client extension keyed by its external reference code.
+ */
+export interface IVisualizationModeRow {
+	active: boolean;
+	clientExtension: boolean;
+	externalReferenceCode: string;
+	label: string;
+	schemaURL: string;
+	thumbnail: string;
+}
+
+export interface IVisualizationModeSchemaField {
+	description?: string;
+	label?: string;
+	name: string;
+	required?: boolean;
+	type?: string;
 }
 
 export interface IDataSet {

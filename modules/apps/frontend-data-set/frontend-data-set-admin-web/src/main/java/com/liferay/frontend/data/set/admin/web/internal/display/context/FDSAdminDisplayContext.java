@@ -6,6 +6,7 @@
 package com.liferay.frontend.data.set.admin.web.internal.display.context;
 
 import com.liferay.client.extension.constants.ClientExtensionEntryConstants;
+import com.liferay.client.extension.type.FDSVisualizationModeCET;
 import com.liferay.client.extension.type.manager.CETManager;
 import com.liferay.frontend.data.set.SystemFDSEntry;
 import com.liferay.frontend.data.set.SystemFDSEntryRegistry;
@@ -175,13 +176,22 @@ public class FDSAdminDisplayContext {
 				themeDisplay.getCompanyId(), null,
 				ClientExtensionEntryConstants.TYPE_FDS_VISUALIZATION_MODE,
 				Pagination.of(QueryUtil.ALL_POS, QueryUtil.ALL_POS), null),
-			fdsVisualizationModeCET -> JSONUtil.put(
-				"externalReferenceCode",
-				fdsVisualizationModeCET.getExternalReferenceCode()
-			).put(
-				"name",
-				fdsVisualizationModeCET.getName(themeDisplay.getLocale())
-			));
+			cet -> {
+				FDSVisualizationModeCET fdsVisualizationModeCET =
+					(FDSVisualizationModeCET)cet;
+
+				return JSONUtil.put(
+					"externalReferenceCode",
+					fdsVisualizationModeCET.getExternalReferenceCode()
+				).put(
+					"name",
+					fdsVisualizationModeCET.getName(themeDisplay.getLocale())
+				).put(
+					"schemaURL", fdsVisualizationModeCET.getSchemaURL()
+				).put(
+					"thumbnail", fdsVisualizationModeCET.getThumbnail()
+				);
+			});
 	}
 
 	public String getImportSystemDataSetURL() {

@@ -56,6 +56,7 @@ const Row = ({
 	item,
 	onDragCrossover,
 	onDrop,
+	onRowClick,
 	query,
 }: {
 	actions?: Array<IAction>;
@@ -64,6 +65,7 @@ const Row = ({
 	item: any;
 	onDragCrossover: Function;
 	onDrop: Function;
+	onRowClick?: (item: any) => void;
 	query: string;
 }) => {
 	const tableRowRef = useRef<HTMLTableRowElement>(null);
@@ -181,8 +183,30 @@ const Row = ({
 	return (
 		<ClayTable.Row
 			className={classNames('orderable-table-row', {
-				dragging: isDragging,
+				'dragging': isDragging,
+				'orderable-table-row-clickable': Boolean(onRowClick),
 			})}
+			onClick={
+				onRowClick
+					? (event: React.MouseEvent<HTMLElement>) => {
+							const target = event.target as HTMLElement;
+
+							// The drag handle, the actions menu, and any
+							// control a cell renders act on the row where they
+							// sit, so they never open it.
+
+							if (
+								target.closest(
+									'.drag-handle-cell, .actions-cell, a, button, input, label, select, textarea'
+								)
+							) {
+								return;
+							}
+
+							onRowClick(item);
+						}
+					: undefined
+			}
 			ref={tableRowRef}
 		>
 			<ClayTable.Cell className="drag-handle-cell">
@@ -312,6 +336,7 @@ const Table = ({
 	items,
 	onDragCrossover,
 	onDrop,
+	onRowClick,
 	query,
 }: {
 	actions?: Array<IAction>;
@@ -319,6 +344,7 @@ const Table = ({
 	items: Array<any>;
 	onDragCrossover: Function;
 	onDrop: Function;
+	onRowClick?: (item: any) => void;
 	query: string;
 }) => {
 	const [, dropRef] = useDrop({
@@ -358,6 +384,7 @@ const Table = ({
 						key={item.externalReferenceCode || item.id || index}
 						onDragCrossover={onDragCrossover}
 						onDrop={onDrop}
+						onRowClick={onRowClick}
 						query={query}
 					/>
 				))}
@@ -379,6 +406,7 @@ interface IOrderableTableProps {
 	noItemsDescription: string;
 	noItemsTitle: string;
 	onOrderChange: (args: {order: string}) => void;
+	onRowClick?: (item: any) => void;
 	title?: string;
 }
 
@@ -393,6 +421,7 @@ const OrderableTable = ({
 	noItemsDescription,
 	noItemsTitle,
 	onOrderChange,
+	onRowClick,
 	title,
 }: IOrderableTableProps) => {
 	const [items, setItems] = useState(initialItems);
@@ -517,6 +546,7 @@ const OrderableTable = ({
 									onOrderChange({order: newOrder});
 								}
 							}}
+							onRowClick={onRowClick}
 							query={query}
 						/>
 					</DndProvider>

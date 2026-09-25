@@ -72,6 +72,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -836,19 +837,39 @@ public class CustomFDSSerializer
 			}
 		);
 
-		// A visualization mode client extension is offered only where the Data
-		// Set Manager enabled it, the same way a client extension filter is
-		// picked per data set (LPD-9599).
+		// Every visualization mode a data set offers, built in or client
+		// extension, is turned on and ordered in the Data Set Manager
+		// (LPD-9599). A built in mode with no row of its own stays on, so a
+		// data set configured before this existed keeps offering what it did.
 
-		for (ObjectEntry objectEntry :
-				getRelatedObjectEntries(
-					fdsName, httpServletRequest, this::_isActive,
-					"dataSetToDataSetVisualizationModes")) {
+		Map<String, Map<String, Object>> visualizationModeProperties =
+			_getVisualizationModeProperties(fdsName, httpServletRequest);
 
-			Map<String, Object> properties = objectEntry.getProperties();
+		List<JSONObject> viewJSONObjects = new ArrayList<>();
 
-			String clientExtensionEntryERC = MapUtil.getString(
-				properties, "clientExtensionEntryERC");
+		for (int i = 0; i < jsonArray.length(); i++) {
+			JSONObject viewJSONObject = jsonArray.getJSONObject(i);
+
+			Map<String, Object> properties = visualizationModeProperties.get(
+				viewJSONObject.getString("name"));
+
+			if ((properties == null) ||
+				GetterUtil.getBoolean(properties.get("active"))) {
+
+				viewJSONObjects.add(viewJSONObject);
+			}
+		}
+
+		for (Map.Entry<String, Map<String, Object>> entry :
+				visualizationModeProperties.entrySet()) {
+
+			Map<String, Object> properties = entry.getValue();
+
+			if (!GetterUtil.getBoolean(properties.get("active"))) {
+				continue;
+			}
+
+			String clientExtensionEntryERC = entry.getKey();
 
 			FDSVisualizationModeCET fdsVisualizationModeCET =
 				(FDSVisualizationModeCET)cetManager.getCET(
@@ -866,7 +887,7 @@ public class CustomFDSSerializer
 				continue;
 			}
 
-			jsonArray.put(
+			viewJSONObjects.add(
 				JSONUtil.put(
 					"contentRenderer", clientExtensionEntryERC
 				).put(
@@ -888,7 +909,15 @@ public class CustomFDSSerializer
 				));
 		}
 
-		return jsonArray;
+		_sortVisualizationModes(dataSetObjectEntryProperties, viewJSONObjects);
+
+		JSONArray viewsJSONArray = _jsonFactory.createJSONArray();
+
+		for (JSONObject viewJSONObject : viewJSONObjects) {
+			viewsJSONArray.put(viewJSONObject);
+		}
+
+		return viewsJSONArray;
 	}
 
 	protected Map<String, Object> getDataSetObjectEntryProperties(
@@ -1118,6 +1147,32 @@ public class CustomFDSSerializer
 
 		return fdsVisualizationModeCET.getName(
 			PortalUtil.getLocale(httpServletRequest));
+	}
+
+	/**
+	 * The visualization modes a data set configured, by the name the view
+	 * carries: the external reference code of a client extension, or "cards",
+	 * "list" or "table" for a built in mode.
+	 */
+	private Map<String, Map<String, Object>> _getVisualizationModeProperties(
+		String fdsName, HttpServletRequest httpServletRequest) {
+
+		Map<String, Map<String, Object>> visualizationModeProperties =
+			new LinkedHashMap<>();
+
+		for (ObjectEntry objectEntry :
+				getRelatedObjectEntries(
+					fdsName, httpServletRequest, null,
+					"dataSetToDataSetVisualizationModes")) {
+
+			Map<String, Object> properties = objectEntry.getProperties();
+
+			visualizationModeProperties.put(
+				MapUtil.getString(properties, "clientExtensionEntryERC"),
+				properties);
+		}
+
+		return visualizationModeProperties;
 	}
 
 	private Boolean _isActive(ObjectEntry objectEntry) {
@@ -1467,6 +1522,35 @@ public class CustomFDSSerializer
 		}
 
 		return jsonObject;
+	}
+
+	private void _sortVisualizationModes(
+		Map<String, Object> dataSetObjectEntryProperties,
+		List<JSONObject> viewJSONObjects) {
+
+		List<String> names = ListUtil.fromString(
+			MapUtil.getString(
+				dataSetObjectEntryProperties, "visualizationModesOrder"),
+			StringPool.COMMA);
+
+		if (names.isEmpty()) {
+			return;
+		}
+
+		// A mode the order does not mention keeps its place behind the ones it
+		// does, rather than disappearing from the selector.
+
+		viewJSONObjects.sort(
+			Comparator.comparingInt(
+				viewJSONObject -> {
+					int index = names.indexOf(viewJSONObject.getString("name"));
+
+					if (index == -1) {
+						return names.size();
+					}
+
+					return index;
+				}));
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
