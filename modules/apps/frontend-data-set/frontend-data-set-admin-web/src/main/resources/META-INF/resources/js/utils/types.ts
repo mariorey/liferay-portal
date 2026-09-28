@@ -189,6 +189,18 @@ export interface IField {
 	visible?: boolean;
 }
 
+/**
+ * One row of a visualization mode's field assignment table: what the mode
+ * names, and the data set field an administrator pointed it at.
+ */
+export interface IFieldAssignment {
+	description?: string;
+	field?: IField;
+	label: string;
+	name: string;
+	required?: boolean;
+}
+
 export interface IFieldTreeItem extends IField {
 	children?: IFieldTreeItem[];
 	disabled?: boolean;

@@ -71,6 +71,7 @@ export default function VisualizationModeDetail({
 					<ClientExtensionFieldMapping
 						fieldMapping={fieldMapping}
 						fieldTreeItems={props.fieldTreeItems}
+						modalProps={props}
 						onSave={onFieldMappingSave}
 						visualizationMode={visualizationMode}
 					/>

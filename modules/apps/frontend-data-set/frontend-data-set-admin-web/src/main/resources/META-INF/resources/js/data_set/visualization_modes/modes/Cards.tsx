@@ -3,17 +3,10 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayAlert from '@clayui/alert';
-import {ClayInput} from '@clayui/form';
 import ClayLayout from '@clayui/layout';
-import ClayTable from '@clayui/table';
-import classNames from 'classnames';
-import {openModal} from 'frontend-js-components-web';
 import {fetch} from 'frontend-js-web';
 import React, {useEffect, useState} from 'react';
 
-import '../../../../css/CardsVisualizationMode.scss';
-import AddDataSourceFieldsModalContent from '../../../components/AddDataSourceFieldsModalContent';
 import {
 	DEFAULT_FETCH_HEADERS,
 	OBJECT_RELATIONSHIP,
@@ -21,10 +14,9 @@ import {
 import getDataSetResourceURL from '../../../utils/getDataSetResourceURL';
 import openDefaultFailureToast from '../../../utils/openDefaultFailureToast';
 import openDefaultSuccessToast from '../../../utils/openDefaultSuccessToast';
-import {IField, IFieldTreeItem} from '../../../utils/types';
+import {IField, IFieldAssignment, IFieldTreeItem} from '../../../utils/types';
 import {IDataSetSectionProps} from '../../DataSet';
-import AddCustomFieldModalContent from '../components/AddCustomFieldModalContent';
-import FieldAssignmentControls from '../components/FieldAssignmentControls';
+import FieldAssignmentTable from '../components/FieldAssignmentTable';
 
 interface IFDSCardsSection {
 	externalReferenceCode: string;
@@ -33,12 +25,10 @@ interface IFDSCardsSection {
 	name: string;
 	rendererName?: string;
 }
-interface ICardsSection {
+interface ICardsSection extends IFieldAssignment {
 	externalReferenceCode?: IFDSCardsSection['externalReferenceCode'];
-	field?: IField;
 	fieldTreeItems: Array<IFieldTreeItem>;
 	id?: IFDSCardsSection['id'];
-	label: string;
 	name: IFDSCardsSection['name'];
 }
 
@@ -244,165 +234,32 @@ export default function Cards(props: IDataSetSectionProps) {
 	}, []);
 
 	return (
-		<ClayLayout.ContentCol className="c-gap-4 cards-visualization-mode">
-			{!cardsSections.some((cardsSection) => cardsSection.field) && (
-				<ClayAlert
-					displayType="info"
-					title={`${Liferay.Language.get('info')}:`}
-					variant="stripe"
-				>
-					{Liferay.Language.get(
-						'this-visualization-mode-will-not-be-shown-until-you-assign-at-least-one-field-to-a-card-element'
-					)}
-				</ClayAlert>
-			)}
-
-			<ClayTable className="mb-0">
-				<ClayTable.Head>
-					<ClayTable.Row>
-						<ClayTable.Cell
-							className="cards-section-label"
-							headingCell
-						>
-							{Liferay.Language.get('card-element')}
-						</ClayTable.Cell>
-
-						<ClayTable.Cell className="field-name" headingCell>
-							{Liferay.Language.get('field')}
-						</ClayTable.Cell>
-					</ClayTable.Row>
-				</ClayTable.Head>
-
-				<ClayTable.Body>
-					{cardsSections.map((cardsSection) => (
-						<CardsSection
-							cardsSection={cardsSection}
-							key={cardsSection.name}
-							modalProps={props}
-							onClearSelection={() => {
-								clearFDSCardSection({cardsSection});
-							}}
-							onSelect={({closeModal, selectedField}) => {
-								selectedField
-									? saveFDSCardsSection({
-											cardsSection,
-											closeModal,
-											field: selectedField,
-										})
-									: clearFDSCardSection({
-											cardsSection,
-											closeModal,
-										});
-							}}
-							saveButtonDisabled={saveButtonDisabled}
-						/>
-					))}
-				</ClayTable.Body>
-			</ClayTable>
+		<ClayLayout.ContentCol className="c-gap-4">
+			<FieldAssignmentTable
+				emptyStateMessage={Liferay.Language.get(
+					'this-visualization-mode-will-not-be-shown-until-you-assign-at-least-one-field-to-a-card-element'
+				)}
+				fieldAssignments={cardsSections}
+				fieldTreeItems={fieldTreeItems}
+				labelColumnHeader={Liferay.Language.get('card-element')}
+				modalProps={props}
+				onClearSelection={(cardsSection) =>
+					clearFDSCardSection({cardsSection})
+				}
+				onSelect={({closeModal, fieldAssignment, selectedField}) =>
+					selectedField
+						? saveFDSCardsSection({
+								cardsSection: fieldAssignment,
+								closeModal,
+								field: selectedField,
+							})
+						: clearFDSCardSection({
+								cardsSection: fieldAssignment,
+								closeModal,
+							})
+				}
+				saveButtonDisabled={saveButtonDisabled}
+			/>
 		</ClayLayout.ContentCol>
-	);
-}
-
-interface ICardsSectionProps {
-	cardsSection: ICardsSection;
-	modalProps: IDataSetSectionProps;
-	onClearSelection: () => void;
-	onSelect: ({
-		closeModal,
-		selectedField,
-	}: {
-		closeModal: Function;
-		selectedField: IField;
-	}) => void;
-	saveButtonDisabled: boolean;
-}
-
-function CardsSection({
-	cardsSection,
-	modalProps,
-	onClearSelection,
-	onSelect,
-	saveButtonDisabled,
-}: ICardsSectionProps) {
-	const {field, fieldTreeItems, label} = cardsSection;
-
-	const openAddCustomFieldModal = () => {
-		openModal({
-			contentComponent: ({closeModal}: {closeModal: Function}) => (
-				<AddCustomFieldModalContent
-					{...modalProps}
-					closeModal={closeModal}
-					onSaveButtonClick={(selectedField: IField) => {
-						onSelect({
-							closeModal,
-							selectedField,
-						});
-					}}
-				/>
-			),
-		});
-	};
-
-	const openAddDataSourceFieldsModal = () => {
-		openModal({
-			className: 'modal-height-full',
-			contentComponent: ({closeModal}: {closeModal: Function}) => (
-				<AddDataSourceFieldsModalContent
-					{...modalProps}
-					closeModal={closeModal}
-					fieldTreeItems={fieldTreeItems}
-					onSaveButtonClick={({
-						selectedFields,
-					}: {
-						selectedFields: Array<IField>;
-					}) => {
-						onSelect({
-							closeModal,
-							selectedField: selectedFields[0],
-						});
-					}}
-					saveButtonDisabled={saveButtonDisabled}
-					selectedFields={field ? [field] : []}
-				/>
-			),
-			size: 'lg',
-		});
-	};
-
-	return (
-		<ClayTable.Row>
-			<ClayTable.Cell className="cards-section-label">
-				<strong>{label}</strong>
-			</ClayTable.Cell>
-
-			<ClayTable.Cell className="field-name">
-				<ClayInput.Group small>
-					<ClayInput.GroupItem>
-						<p
-							className={classNames(
-								'align-items-center d-flex mb-0',
-								{'text-secondary': !field}
-							)}
-						>
-							{field
-								? field.label || field.name
-								: Liferay.Language.get('not-assigned')}
-						</p>
-					</ClayInput.GroupItem>
-
-					<ClayInput.GroupItem shrink>
-						<FieldAssignmentControls
-							field={field}
-							label={label}
-							onClearSelection={onClearSelection}
-							openAddCustomFieldModal={openAddCustomFieldModal}
-							openAddDataSourceFieldsModal={
-								openAddDataSourceFieldsModal
-							}
-						/>
-					</ClayInput.GroupItem>
-				</ClayInput.Group>
-			</ClayTable.Cell>
-		</ClayTable.Row>
 	);
 }
