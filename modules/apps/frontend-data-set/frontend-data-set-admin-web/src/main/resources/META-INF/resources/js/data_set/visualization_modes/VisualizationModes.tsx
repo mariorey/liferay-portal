@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
 import ClayLabel from '@clayui/label';
 import ClayLayout from '@clayui/layout';
-import {fetch} from 'frontend-js-web';
+import {fetch, sub} from 'frontend-js-web';
 import React, {useCallback, useEffect, useState} from 'react';
 
 import OrderableTable from '../../components/OrderableTable';
@@ -298,6 +299,36 @@ export default function VisualizationModes(props: IDataSetSectionProps) {
 							},
 							label: Liferay.Language.get('status'),
 							name: 'active',
+						},
+						{
+
+							// Opening a row by clicking it is quick but
+							// invisible, so the same thing is spelled out as a
+							// button that a keyboard and a screen reader can
+							// find.
+
+							contentRenderer: {
+								component: ({item}: any) => (
+									<ClayButton
+										aria-label={sub(
+											Liferay.Language.get('edit-x'),
+											item.label
+										)}
+										displayType="secondary"
+										onClick={() =>
+											setSelectedModeId(
+												item.externalReferenceCode
+											)
+										}
+										size="sm"
+									>
+										{Liferay.Language.get('edit')}
+									</ClayButton>
+								),
+								textMatch: () => '',
+							},
+							label: '',
+							name: 'edit',
 						},
 					]}
 					items={rows}
