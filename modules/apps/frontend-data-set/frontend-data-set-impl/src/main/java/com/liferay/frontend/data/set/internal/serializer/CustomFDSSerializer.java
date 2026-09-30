@@ -39,6 +39,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -887,6 +888,17 @@ public class CustomFDSSerializer
 				continue;
 			}
 
+			// A mode that declares a schema stays out of the view selector
+			// until its fields are mapped, the way a built in mode stays out
+			// until its elements are assigned. A mode without a schema works
+			// its own fields out, so it has nothing to wait for.
+
+			if (Validator.isNotNull(fdsVisualizationModeCET.getSchemaURL()) &&
+				!_hasFieldMapping(properties)) {
+
+				continue;
+			}
+
 			viewJSONObjects.add(
 				JSONUtil.put(
 					"contentRenderer", clientExtensionEntryERC
@@ -1173,6 +1185,36 @@ public class CustomFDSSerializer
 		}
 
 		return visualizationModeProperties;
+	}
+
+	private boolean _hasFieldMapping(Map<String, Object> properties) {
+		String fieldMapping = MapUtil.getString(properties, "fieldMapping");
+
+		if (Validator.isNull(fieldMapping)) {
+			return false;
+		}
+
+		try {
+			JSONObject fieldMappingJSONObject = _jsonFactory.createJSONObject(
+				fieldMapping);
+
+			for (String key : fieldMappingJSONObject.keySet()) {
+				if (Validator.isNotNull(
+						fieldMappingJSONObject.getString(key))) {
+
+					return true;
+				}
+			}
+
+			return false;
+		}
+		catch (JSONException jsonException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Unable to read the field mapping", jsonException);
+			}
+
+			return false;
+		}
 	}
 
 	private Boolean _isActive(ObjectEntry objectEntry) {

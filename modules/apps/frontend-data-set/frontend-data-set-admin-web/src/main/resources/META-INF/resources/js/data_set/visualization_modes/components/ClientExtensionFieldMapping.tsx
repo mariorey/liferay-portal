@@ -186,12 +186,18 @@ export default function ClientExtensionFieldMapping({
 
 	return (
 		<ClayLayout.ContentCol className="c-gap-4">
-			<FieldAssignmentTable
-				emptyStateMessage={sub(
+			<p className="mb-0 text-secondary">
+				{sub(
 					Liferay.Language.get(
 						'x-declares-the-fields-below-pick-what-this-data-set-holds-for-each-of-them'
 					),
 					visualizationMode.label
+				)}
+			</p>
+
+			<FieldAssignmentTable
+				emptyStateMessage={Liferay.Language.get(
+					'this-visualization-mode-will-not-be-shown-until-you-map-at-least-one-field'
 				)}
 				fieldAssignments={fieldAssignments}
 				fieldTreeItems={fieldTreeItems}
