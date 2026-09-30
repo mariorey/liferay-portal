@@ -29,10 +29,25 @@ FDSVisualizationModeCET fdsVisualizationModeCET = editClientExtensionEntryDispla
 	</div>
 </aui:field-wrapper>
 
-<aui:field-wrapper cssClass="form-group">
-	<aui:input label="icon" name="thumbnail" type="text" value="<%= fdsVisualizationModeCET.getThumbnail() %>" />
+<div class="form-group">
+	<label>
+		<liferay-ui:message key="icon" />
+	</label>
+
+	<div>
+		<react:component
+			module="{FDSVisualizationModeIconSelector} from client-extension-web"
+			props='<%=
+				HashMapBuilder.<String, Object>put(
+					"selectedIcon", fdsVisualizationModeCET.getThumbnail()
+				).put(
+					"spritemap", themeDisplay.getPathThemeImages() + "/clay/icons.svg"
+				).build()
+			%>'
+		/>
+	</div>
 
 	<div class="form-text">
-		<liferay-ui:message key="enter-the-name-of-the-clay-icon-that-represents-this-visualization-mode-in-the-data-set-toolbar" />
+		<liferay-ui:message key="pick-the-icon-that-represents-this-visualization-mode-in-the-data-set-toolbar" />
 	</div>
-</aui:field-wrapper>
+</div>
